@@ -2,8 +2,9 @@ import Datatypes
 import Decisiontree
 import Utils
 
-main :: IO ()
-main = do
+-- Loading new data and trained tree + classification
+classification :: IO ()
+classification = do
 
 
     -- Obtain data from file to predict 
@@ -23,4 +24,5 @@ main = do
     -- Predict (decide)
     print "Calculating predictions"
     let predictions = predictTree tree newdata
-    print predictions
+    -- Print predictions in lines (without last new line)
+    putStrLn (init $ unlines predictions)

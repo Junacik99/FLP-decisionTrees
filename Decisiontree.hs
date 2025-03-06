@@ -2,7 +2,8 @@ module Decisiontree
 (
     predict,
     predictTree,
-    loadTree
+    loadTree,
+    tree2string
 )
 where
 ---- DECISION TREE ----
@@ -47,3 +48,12 @@ getThreshold node = read (splitOn ',' (splitOn ':' node !! 1) !! 1) :: Feature
 getLevels tree = zip tree (map f tree)
     where f line = countChar ' ' line `div` 2
 
+--- SAVING TREE
+-- Transform tree into string
+tree2string level (Leaf cls) = replicate (level*2) ' ' ++ "Leaf: " ++ cls ++ "\n"
+tree2string level (Node idx threshold ltree rtree) = 
+    replicate (level*2) ' ' ++ "Node: " ++ show idx ++ ", " ++ show threshold ++ "\n" ++ tree2string (level+1) ltree ++ tree2string (level+1) rtree
+
+
+--- TRAINING
+-- TODO
