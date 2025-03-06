@@ -9,6 +9,7 @@ where
 ---- DATA TYPES ----
 -- This module contains custom data types
 
+-- Alias types for better readability
 type Index = Int
 type Feature = Float
 type Class = String
