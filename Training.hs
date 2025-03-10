@@ -2,6 +2,7 @@ import Datatypes
 import Decisiontree
 import Utils
 import Data.List (sort, nub, elemIndex)
+import Language.Haskell.TH (prim)
 
 -- Obtain column of features with index i
 getColumn i = map (!! i)
@@ -25,6 +26,10 @@ giniImpurity targets = 1.0 - sum (map (\x -> (x / sum targets) ^ 2) targets)
 
 -- Calculate weighted average of Gini impurity
 weightedGiniImpurity under over = (sum under / (sum under + sum over)) * giniImpurity under + (sum over / (sum under + sum over)) * giniImpurity over
+
+-- Get index of the minimum element in the list
+minIndex [] = 0
+minIndex xs = head $ filter (\i -> xs !! i == minimum xs) [0..length xs - 1]
 
 -- Load train data + train tree
 training :: IO ()
@@ -51,25 +56,23 @@ training = do
     -- 3. calculate Gini impurity for each of them - more calculations      TODO
         -- a. for both branches -> 1 - probability of all classes squared   check
         -- b. total gini impurity -> weighted average from two branches     check
-        -- c. select threshold with the lowest gini impurity                TODO
-    -- 4. select column (feature) with the lowest gini impurity
+        -- c. select threshold with the lowest gini impurity                check
+    -- 4. select column (feature) with the lowest gini impurity             TODO
 
     -- Get under and over threshold counts
     let under_threshold = getUnderThreshold train_targets unique_targets
     let over_threshold = reverse $ getUnderThreshold (reverse train_targets) unique_targets
 
-    -- Get intermediate values
+    -- Get intermediate values for one column
     let intermediate_values = getIntermediateValues $ getColumn 2 train_features
-
-    -- Calculate Gini impurity for each threshold
-    -- let gini_under = map giniImpurity under_threshold
-    -- let gini_over = map giniImpurity over_threshold
-    -- print gini_under
-    -- print gini_over
 
     -- Calculate weighted Gini impurity for each threshold
     let weighted_gini = zipWith weightedGiniImpurity under_threshold over_threshold
+
+    let candidate_threshold = intermediate_values !! minIndex weighted_gini
+    print intermediate_values
     print weighted_gini
+    print candidate_threshold
 
     -- Create string from tree and delete last empty line
     -- let tree_to_save = init $ tree2string 0 tree_test
