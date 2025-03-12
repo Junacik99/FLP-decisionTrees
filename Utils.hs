@@ -5,7 +5,10 @@ module Utils
     convertData,
     countChar,
     trimLines,
-    dropWhileSecond
+    dropWhileSecond,
+    deleteAt,
+    safeGet,
+    minIndex
 ) where
 import Distribution.Compat.Prelude (readMaybe)
 import Text.Read (readEither)
@@ -39,3 +42,16 @@ trimLines _ [] = []
 trimLines e (x:xs) = (dropWhile (== e) (fst x), snd x) : trimLines e xs
 
 dropWhileSecond condition = dropWhile (\(_, y) -> condition y)
+
+-- Delete element at index n
+deleteAt _ [] = []
+deleteAt 0 (x:xs) = xs
+deleteAt n (x:xs) = x : deleteAt (n - 1) xs
+
+-- Get value from Maybe
+safeGet (Just x) = x
+safeGet Nothing = error "No value"
+
+-- Get index of the minimum element in the list
+minIndex [] = 0
+minIndex xs = head $ filter (\i -> xs !! i == minimum xs) [0..length xs - 1]
