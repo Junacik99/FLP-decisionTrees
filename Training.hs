@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use guards" #-}
+{-# HLINT ignore "Redundant if" #-}
 import Datatypes
 import Decisiontree
 import Utils
@@ -92,7 +95,7 @@ findMinTuple = minimumBy (\x y -> compare (fst x) (fst y))
 -- Get node value
 getNode (Just feature_idx, (_, threshold_idx)) features feature_indexes = (real_feature_idx, threshold)
     -- This is the threshold that will be used as a root node (snd (snd winner) is the feature index)
-    where 
+    where
         threshold = getIntermediateValues (getColumn feature_idx features) !! threshold_idx
         real_feature_idx = feature_indexes !! feature_idx
 getNode (Nothing, _) _ _ = error "No Node"
@@ -113,9 +116,54 @@ deleteAt _ [] = []
 deleteAt 0 (x:xs) = xs
 deleteAt n (x:xs) = x : deleteAt (n - 1) xs
 
+-- Get value from Maybe
 safeGet (Just x) = x
 safeGet Nothing = error "No value"
 
+
+getTree :: [([ Feature ], Class)] -> [Int] -> Tree
+getTree all_data feature_indexes =
+    -- If the branch is pure, return Leaf with the class
+    if isPure $ map snd all_data
+        then Leaf $ getMajority $ map snd all_data
+
+    -- If max depth is reached, return Leaf with the class that has majority
+    else if null feature_indexes
+        then Leaf $ getMajority $ map snd all_data
+
+    -- If the branch is not pure, return Node with the feature index and threshold
+    else Node getIndex getThreshold (getTree new_left_branch new_feature_indexes) (getTree new_right_branch new_feature_indexes)
+    where
+        -- Get min Gini impurity and threshold index for each column
+        columns_count = length feature_indexes
+        min_ginis = map (\n -> getGiniIdx (map snd all_data) $ getColumn n $ map fst all_data) [0..columns_count - 1]
+
+        -- (gini impurity, threshold index)
+        winner_tuple = findMinTuple min_ginis
+
+        -- (fake feature index, (gini impurity, threshold index/row))
+        winner = (elemIndex winner_tuple min_ginis, winner_tuple)
+
+        -- Get the winner node (real feature index, threshold)
+        features = map fst all_data
+        winner_node = getNode winner features feature_indexes
+
+        -- Split data into branches
+        (left_branch, right_branch) = splitData (safeGet $ fst winner) (snd winner_node) all_data
+
+        -- Delete column - get data for new branches
+        new_feature_indexes = deleteAt (safeGet $ fst winner) feature_indexes
+
+        new_left_branch =
+            map (\(features, target) -> (deleteAt (safeGet $ fst winner) features, target)) left_branch
+        new_right_branch =
+            map (\(features, target) -> (deleteAt (safeGet $ fst winner) features, target)) right_branch
+
+        -- Get index of the winner node
+        getIndex = fst winner_node
+
+        -- Get threshold of the winner node
+        getThreshold = snd winner_node
 
 -- Load train data + train tree
 training :: IO ()
@@ -145,45 +193,52 @@ training = do
         -- 4. select column (feature) with the lowest gini impurity             check
 
     -- Get min Gini impurity and threshold index for each column
-    let min_ginis = map (\n -> getGiniIdx train_targets $ getColumn n train_features) [0..columns_count - 1]
+    -- let min_ginis = map (\n -> getGiniIdx train_targets $ getColumn n train_features) [0..columns_count - 1]
 
-    let winner_tuple = findMinTuple min_ginis -- (gini impurity, threshold index)
+    -- let winner_tuple = findMinTuple min_ginis -- (gini impurity, threshold index)
 
-    -- (fake feature index, (gini impurity, threshold index/row))
-    let winner = (elemIndex winner_tuple min_ginis, winner_tuple)
+    -- -- (fake feature index, (gini impurity, threshold index/row))
+    -- let winner = (elemIndex winner_tuple min_ginis, winner_tuple)
 
-    -- Get the winner node (real feature index, threshold)
-    let winner_node = getNode winner train_features feature_indexes
-    print winner_node
+    -- -- Get the winner node (real feature index, threshold)
+    -- let winner_node = getNode winner train_features feature_indexes
+    -- print winner_node
 
-    -- print $ fst winner_tuple
+    -- -- print $ fst winner_tuple
 
-    -- Split data:
-        -- 1. Get under threshold and over threshold
-        -- 2. Delete the winner column? Or skip it? Remember, the column index will be needed
-            -- Keep list of indexes. On delete, delete also from the list of indexes.
-            -- New column index will point to the true index in the original list
-    -- Recursively call for each branch
-    -- Count classes in the branch
-        -- Get under threshold or over threshold and call isPure'
-        -- Or after split call isPure
-    -- If the branch is pure, return Leaf with the class
-    -- How to find out if the branch is pure? -> Check if all targets are the same
-    -- If max depth is reached, return Leaf with the class that has majority
-        -- Max depth = columns_count (in recursive call, decrease the depth)
-    -- If the branch is not pure, return Node with the feature index and threshold
+    -- -- Split data:
+    --     -- 1. Get under threshold and over threshold
+    --     -- 2. Delete the winner column? Or skip it? Remember, the column index will be needed
+    --         -- Keep list of indexes. On delete, delete also from the list of indexes.
+    --         -- New column index will point to the true index in the original list
+    -- -- Recursively call for each branch
+    -- -- Count classes in the branch
+    --     -- Get under threshold or over threshold and call isPure'
+    --     -- Or after split call isPure
+    -- -- If the branch is pure, return Leaf with the class
+    -- -- How to find out if the branch is pure? -> Check if all targets are the same
+    -- -- If max depth is reached, return Leaf with the class that has majority
+    --     -- Max depth = columns_count (in recursive call, decrease the depth)
+    -- -- If the branch is not pure, return Node with the feature index and threshold
 
-    -- Split data into branches
+    -- -- Split data into branches
+    -- let all_data = zip train_features train_targets
+    -- let (left_branch, right_branch) = uncurry splitData winner_node all_data
+
+    -- -- Delete column - get data for new branches
+    -- let new_feature_indexes = deleteAt (safeGet $ fst winner) feature_indexes
+    -- let new_left_branch =
+    --         map (\(features, target) -> (deleteAt (safeGet $ fst winner) features, target)) left_branch
+    -- let new_right_branch =
+    --         map (\(features, target) -> (deleteAt (safeGet $ fst winner) features, target)) right_branch
+
+
+    -- print $ map fst new_left_branch
+
+    -- let tree = uncurry Node winner_node (getTree new_left_branch new_feature_indexes) (getTree new_right_branch new_feature_indexes)
     let all_data = zip train_features train_targets
-    let (left_branch, right_branch) = uncurry splitData winner_node all_data
-
-    -- Delete column
-    let new_feature_indexes = deleteAt (safeGet $ fst winner) feature_indexes
-    let new_left_branch = map (\(features, target) -> (deleteAt (safeGet $ fst winner) features, target)) left_branch
-    let new_right_branch = map (\(features, target) -> (deleteAt (safeGet $ fst winner) features, target)) right_branch
-
-    -- let tree = uncurry Node winner_node (Leaf "TridaA") (Leaf "TridaB") -- TODO: call function for left and right branch
-    -- print tree
+    let tree = getTree all_data feature_indexes
+    print tree
 
     -- Get ONE column
     -- let column = getColumn 0 train_features
