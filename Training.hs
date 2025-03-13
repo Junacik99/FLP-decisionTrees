@@ -8,7 +8,7 @@ training :: IO ()
 training = do
 
     -- Load data
-    content <- readFile "test/data/data_table.csv"
+    content <- readFile "test/data/housing_all.csv"
     let loaded_data = splitLines ',' $ lines content            -- Raw data
     let train_features = convertData $ map init loaded_data     -- Features
     let train_targets = map last loaded_data                    -- Targets

@@ -85,7 +85,7 @@ tree2string level (Node idx threshold ltree rtree) =
 
 -- Split data:
         -- 1. Get under threshold and over threshold
-        -- 2. Delete the winner column? Or skip it? Remember, the column index will be needed
+        -- 2. Delete the winner column. Remember, the column index will be needed
             -- Keep list of indexes. On delete, delete also from the list of indexes.
             -- New column index will point to the true index in the original list
     -- Recursively call for each branch
@@ -98,13 +98,17 @@ tree2string level (Node idx threshold ltree rtree) =
         -- Max depth = columns_count (in recursive call, decrease the depth)
     -- If the branch is not pure, return Node with the feature index and threshold
 getTree :: [([ Feature ], Class)] -> [Int] -> Tree
+getTree [] _ = error "Empty data - getTree"
+-- If max depth is reached, return Leaf with the class that has majority
+getTree all_data []= Leaf $ getMajority $ map snd all_data
+-- getTree [] feature_indexes = error $ show feature_indexes
 getTree all_data feature_indexes =
     -- If the branch is pure, return Leaf with the class
     if isPure $ map snd all_data
         then Leaf $ getMajority $ map snd all_data
 
-    -- If max depth is reached, return Leaf with the class that has majority
-    else if null feature_indexes
+    -- If there would be no data after split, return Leaf
+    else if null left_branch || null right_branch
         then Leaf $ getMajority $ map snd all_data
 
     -- If the branch is not pure, return Node with the feature index and threshold
@@ -167,6 +171,7 @@ giniImpurity targets = 1.0 - sum (map (\x -> (x / sum targets) ^ 2) targets)
 weightedGiniImpurity under over = (sum under / (sum under + sum over)) * giniImpurity under + (sum over / (sum under + sum over)) * giniImpurity over
 
 -- Get weighted Gini impurities for one column
+getWeightedGinis [] = error "Empty targets - getWeightedGinis"
 getWeightedGinis targets = zipWith weightedGiniImpurity under_threshold over_threshold
     where
         -- Get under and over threshold counts
@@ -177,6 +182,8 @@ getWeightedGinis targets = zipWith weightedGiniImpurity under_threshold over_thr
         unique_targets = sort $ nub targets
 
 -- Get Gini impurity index for one column
+getGiniIdx _ [] = error "Empty column - getGiniIdx"
+getGiniIdx [] _ = error "Empty targets - getGiniIdx"
 getGiniIdx targets column = (minimum weightedGinis, minIndex weightedGinis)
         where
             weightedGinis = getWeightedGinis sorted_targets
@@ -189,12 +196,13 @@ getGiniIdx targets column = (minimum weightedGinis, minIndex weightedGinis)
 findMinTuple = minimumBy (\x y -> compare (fst x) (fst y))
 
 -- Get node value
+getNode _ [] _ = error "No features - getNode"
 getNode (Just feature_idx, (_, threshold_idx)) features feature_indexes = (real_feature_idx, threshold)
     -- This is the threshold that will be used as a root node (snd (snd winner) is the feature index)
     where
         threshold = getIntermediateValues (getColumn feature_idx features) !! threshold_idx
         real_feature_idx = feature_indexes !! feature_idx
-getNode (Nothing, _) _ _ = error "No Node"
+getNode (Nothing, _) _ _ = error "No Node - getNode"
 
 isPure targets = length (nub targets) == 1      -- Check if there is only one unique target in the list
 isPure' xs = length (filter (/= 0) xs) == 1     -- Check if there is only one non-zero element in the list

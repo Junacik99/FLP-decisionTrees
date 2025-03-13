@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use first" #-}
 module Utils
 (
     splitOn,
@@ -38,9 +40,11 @@ convertData (x:xs) = convert x : convertData xs
 countChar _ "" = 0
 countChar x xs = if x == head xs then 1 + countChar x (tail xs) else 0
 
+-- Trim lines from leading elements
 trimLines _ [] = []
 trimLines e (x:xs) = (dropWhile (== e) (fst x), snd x) : trimLines e xs
 
+-- dropWhile applied to the snd element of a tuple in a list
 dropWhileSecond condition = dropWhile (\(_, y) -> condition y)
 
 -- Delete element at index n
