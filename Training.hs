@@ -1,14 +1,19 @@
+module Training
+(
+    training
+)
+where
+
 import Datatypes
 import Decisiontree
 import Utils
 
 
 -- Load train data + train tree
-training :: IO ()
-training = do
+training file_path = do
 
     -- Load data
-    content <- readFile "test/data/housing_all.csv"
+    content <- readFile file_path
     let loaded_data = splitLines ',' $ lines content            -- Raw data
     let train_features = convertData $ map init loaded_data     -- Features
     let train_targets = map last loaded_data                    -- Targets
@@ -47,7 +52,7 @@ training = do
 
     let all_data = zip train_features train_targets
     let tree = getTree all_data feature_indexes
-    print tree
+    -- print tree
 
     -- Get ONE column
     -- let column = getColumn 0 train_features

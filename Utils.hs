@@ -12,8 +12,6 @@ module Utils
     safeGet,
     minIndex
 ) where
-import Distribution.Compat.Prelude (readMaybe)
-import Text.Read (readEither)
 --- UTILS ---
 -- This file contains all utility functions
 
