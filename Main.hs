@@ -6,8 +6,8 @@
 ------------------------------
 
 import System.Environment (getArgs)
-import Training
-import Classification
+import Training ( training )
+import Classification ( classification )
 
 parseArgs :: [String] -> IO ()
 parseArgs [] = error "No arguments were provided"

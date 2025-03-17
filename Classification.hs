@@ -2,11 +2,12 @@ module Classification (
     classification
 ) where
 
-import Datatypes
-import Decisiontree
-import Utils
+import Datatypes ()
+import Decisiontree ( predictTree, loadTree )
+import Utils ( convertData, splitLines )
 
 -- Loading new data and trained tree + classification
+classification :: FilePath -> FilePath -> IO ()
 classification data_path tree_path = do
 
 

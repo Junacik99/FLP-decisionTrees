@@ -4,12 +4,13 @@ module Training
 )
 where
 
-import Datatypes
-import Decisiontree
-import Utils
+import Datatypes ()
+import Decisiontree ( tree2string, getTree )
+import Utils ( convertData, splitLines )
 
-
+-- TODO: Print new lines as new lines instead of '\n'
 -- Load train data + train tree
+training :: FilePath -> IO ()
 training file_path = do
 
     -- Load data
@@ -72,6 +73,4 @@ training file_path = do
     -- Create string from tree and delete last empty line
     let tree_to_save = init $ tree2string 0 tree
     print tree_to_save
-    writeFile "output.txt" tree_to_save
-
-    print ""
+    -- writeFile "output.txt" tree_to_save
