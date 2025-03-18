@@ -8,8 +8,7 @@ import Utils ( convertData, splitLines )
 
 -- Loading new data and trained tree + classification
 classification :: FilePath -> FilePath -> IO ()
-classification data_path tree_path = do
-
+classification tree_path data_path = do
 
     -- Obtain data from file to predict 
     -- print "Loading data points"

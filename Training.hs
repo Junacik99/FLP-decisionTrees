@@ -72,5 +72,5 @@ training file_path = do
 
     -- Create string from tree and delete last empty line
     let tree_to_save = init $ tree2string 0 tree
-    print tree_to_save
+    putStrLn tree_to_save
     -- writeFile "output.txt" tree_to_save
