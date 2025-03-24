@@ -19,7 +19,7 @@ where
 import Datatypes ( Class, Feature, Index, Tree(..) )
 import Utils ( 
     countChar,
-    deleteAt,
+    -- deleteAt,
     dropWhileSecond,
     minIndex,
     safeGet,
@@ -150,12 +150,17 @@ getTree all_data feature_indexes =
         (left_branch, right_branch) = splitData (safeGet $ fst winner) (snd winner_node) all_data
 
         -- Delete column - get data for new branches
-        new_feature_indexes = deleteAt (safeGet $ fst winner) feature_indexes
+        -- new_feature_indexes = deleteAt (safeGet $ fst winner) feature_indexes
 
-        new_left_branch =
-            map (\(ftrs, target) -> (deleteAt (safeGet $ fst winner) ftrs, target)) left_branch
-        new_right_branch =
-            map (\(ftrs, target) -> (deleteAt (safeGet $ fst winner) ftrs, target)) right_branch
+        -- new_left_branch =
+        --     map (\(ftrs, target) -> (deleteAt (safeGet $ fst winner) ftrs, target)) left_branch
+        -- new_right_branch =
+        --     map (\(ftrs, target) -> (deleteAt (safeGet $ fst winner) ftrs, target)) right_branch
+
+        -- Do not use max depth - do not delete feature index
+        new_feature_indexes = feature_indexes
+        new_left_branch = left_branch
+        new_right_branch = right_branch
 
         -- Get index of the winner node
         getIndex = fst winner_node
