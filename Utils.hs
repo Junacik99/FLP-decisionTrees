@@ -1,3 +1,10 @@
+------------------------------
+-- Decision Tree Classifier --
+--           FLP            --
+--      Martin Takacs       --
+--         xtakac07         --
+--           2025           --
+------------------------------
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use first" #-}
 module Utils

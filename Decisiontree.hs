@@ -15,7 +15,7 @@ where
 -- This module contains all functionality of the decision tree:
 --      Traversing
 --      Predictions
---      TODO: Training
+--      Training
 import Datatypes ( Class, Feature, Index, Tree(..) )
 import Utils ( 
     countChar,
